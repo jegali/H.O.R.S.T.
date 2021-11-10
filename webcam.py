@@ -116,22 +116,22 @@ color = {
         'yellow' : (0,255,255)
         }
 
-def color_detect(h,s,v):
-    if h <=19 and h>=3 and s<=213 and s>=120 and v>=90:
-        return 'orange'
-    # in hsv, the red space wraps around 180 and has to be [0..10] and [170..180]
-    elif (h>=170) and s>=130 :
-        return 'red'          
-    elif h <= 60 and h>=22 and s>=130 and v>=190:
-        return 'yellow'
-    elif h <=94 and h>=61 and s>=94 and v>=64:
-        return 'green'
-    elif h<=128 and h>=95 and s>=123 and v>=94:
-        return 'blue'
-    elif h<=128 and h>=26 and s<=40 and v>=139:
-        return 'white'
-    return 'white'
 
+def color_detect(h,s,v):
+    if (int(h) in range(3,20) and int(s) in range(120,180) and int(v) in range(90,256)):
+	    return 'orange'
+	# in hsv, the red space wraps around 180 and has to be [0..10] and [170..180]
+    if ((int(h) in range(0,11) or int(h) in range(160,181)) and int(s) in range(170,256)):	    
+	    return 'red'
+    if (int(h) in range(61,95) and int(s) in range(94,256) and int(v) in range(64,256)):
+	    return 'green'
+    if (int(h) in range(95,129) and int(s) in range(123,256) and int(v) in range(94,256)):
+        return 'blue'	
+    if (int(h) in range(22,61) and int(s) in range(100,256) and int(v) in range(170,256)):
+	    return 'yellow'
+    if (int(h) in range(26,129) and int(s) in range(0,41) and int(v) in range(139,256)):
+        return 'white'
+    return 'white'		
 
 
 def draw_stickers(frame,stickers,name):
@@ -258,6 +258,8 @@ while True:
     current_state[3], current_state[5] = current_state[5], current_state[3]
     current_state[6], current_state[8] = current_state[8], current_state[6]
 
+    # get the middle piece for color detection
+    print ("Mittlere Farbe: ", hsv[4], " erkannt: ", color_detect(hsv[4][0],hsv[4][1], hsv[4][2]))
 
     cv2.putText(img, faces[current_face], (262,52), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,0), 2, cv2.LINE_AA)
     cv2.putText(img, faces[current_face], (260,50), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255,255,255), 2, cv2.LINE_AA)
@@ -276,7 +278,7 @@ while True:
     elif keypress == ord('u'):
         current_state[4] = 'white'
         state['up']=current_state
-        #check_state.append('u')
+        check_state.append('u')
     elif keypress == ord('l'):
         state['left']=current_state
         check_state.append('l')
@@ -299,4 +301,3 @@ while True:
         state[face_colors[current_face]]=current_state
     elif keypress == ord(' '):
         current_face = (current_face + 1) % 6
-
