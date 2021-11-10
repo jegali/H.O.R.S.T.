@@ -1,5 +1,9 @@
 from tkinter import *
 import os
+from pathlib import Path
+
+# This is the standard cube displayed when program is starting
+cubeconfig = "WWWWWWWWWOOOGGGRRRBBBOOOGGGRRRBBBOOOGGGRRRBBBYYYYYYYYY"	
 
 # this is used to pad the GUI
 padding = 20
@@ -14,10 +18,10 @@ colorcurrent = None
 colorpicker_id = [0 for column in range(6)]
 
 facelet_id = [[[0 for column in range(3)] for row in range(3)] for face in range(6)]
-face_name = ("U", "R", "F", "D", "L", "B")
-face_colors = ("white", "red", "green", "yellow", "orange", "blue")
+face_name = ("U", "L", "F", "R", "B", "D")
+face_colors = ("white", "orange", "green", "red", "blue", "yellow")
 
-offset = ((1,0), (2,1), (1,1), (1,2), (0,1), (3,1))
+offset = ((1,0), (0,1), (1,1), (2,1), (3,1), (1,2))
 
 # create the facelets
 def create_facelets(facelet_size):
@@ -25,12 +29,21 @@ def create_facelets(facelet_size):
         for row in range(3):
             y = (row * facelet_size) + (offset[face][1] * facelet_size * 3) + padding / 2    
             for column in range(3):
-                x = (column * facelet_size) + (offset[face][0] * facelet_size * 3) +padding / 2
+                x = (column * facelet_size) + (offset[face][0] * facelet_size * 3) + padding / 2
                 facelet_id[face][row][column] = canvas.create_rectangle(x,y, (x + facelet_size), (y + facelet_size), fill=face_colors[face])   
-                if (row == 1 and column == 1):
-                    canvas.create_text(x + facelet_size / 2, y + facelet_size / 2, font=("", 14), text=face_name[face], state=DISABLED)
     for face in range(6):
         canvas.itemconfig(facelet_id[face][1][1], fill=face_colors[face])
+
+
+def create_textsticker(facelet_size):
+    for face in range(6):
+        for row in range(3):
+            y = (row * facelet_size) + (offset[face][1] * facelet_size * 3) + padding / 2    
+            for column in range(3):
+                x = (column * facelet_size) + (offset[face][0] * facelet_size * 3) + padding / 2
+                if (row == 1 and column == 1):
+                    canvas.create_text(x + facelet_size / 2, y + facelet_size / 2, font=("", 14), text=face_name[face], state=DISABLED)
+
 
 
 # remove the colors from the facelets - except the center pieces
@@ -42,7 +55,7 @@ def clear_facelets():
                     canvas.itemconfig(facelet_id[face][row][column], fill="grey")
 
 
-# reset the cube and set it ti solved
+# reset the cube and set it solved
 def reset_facelets():
     for face in range(6):
         for row in range(3):
@@ -78,15 +91,35 @@ def click(event):
             if (idlist[0] != 5 and idlist[0] != 15 and idlist[0] != 25 and idlist[0] != 35 and idlist[0] != 45 and idlist[0] != 55):
                 # use the chosen color to fill the clicked facelet
                 canvas.itemconfig("current", fill=colorcurrent)
-
+    print("IDlist:", idlist)
 
 def call_solver():
     os.system("python ../Rubik/rubik.py")
     print("Back in Black")
 
+
 def call_webcam():
     os.system("python ./webcam.py")
-    print("Back in Black")
+    my_file = Path("./cubeconfig.txt")
+    if my_file.exists():
+        with open('cubeconfig.txt') as configfile:
+            cubeconfig = configfile.readlines()
+        if cubeconfig == ("W" * 54):
+            print("Configuration is invalid...")
+            print("Setting standard cube configuration")
+            cubeconfig = "WWWWWWWWWOOOGGGRRRBBBOOOGGGRRRBBBOOOGGGRRRBBBYYYYYYYYY"
+    else:
+        print("Configuration file cubeconfig.txt not found...")
+        print("Setting standard cube config...")		
+        cubeconfig = "WWWWWWWWWOOOGGGRRRBBBOOOGGGRRRBBBOOOGGGRRRBBBYYYYYYYYY"	
+        with open("cubeconfig.txt", "w") as text_file:
+            text_file.write(cubeconfig)
+    return cubeconfig
+
+
+def call_setcube():
+    print("Yoho Piraten")
+    pass
 
 
 # create a TkInter window
@@ -101,6 +134,7 @@ canvas.pack()
 # create the gui
 # create the facelets
 create_facelets(facelet_size)
+create_textsticker(facelet_size)
 # create the colorpicker
 create_colorpicker(facelet_size)
 
@@ -112,13 +146,17 @@ btn_clear_window = canvas.create_window(20,20,anchor=NW, window=btn_clear)
 btn_reset = Button(text="Reset Cube", height=1, width=10, relief=RAISED, command=reset_facelets)
 btn_reset_window = canvas.create_window(20,50,anchor=NW, window=btn_reset)
 
-# Call the 3d-solver 
-btn_reset = Button(text="Start webcam", height=1, width=10, relief=RAISED, command=call_webcam)
-btn_reset_window = canvas.create_window(20,80,anchor=NW, window=btn_reset)
+# Call the webcam 
+btn_webcam = Button(text="Start webcam", height=1, width=10, relief=RAISED, command=call_webcam)
+btn_webcam_window = canvas.create_window(20,80,anchor=NW, window=btn_webcam)
 
 # Call the 3d-solver 
 btn_reset = Button(text="Start Solver", height=1, width=10, relief=RAISED, command=call_solver)
 btn_reset_window = canvas.create_window(20,110,anchor=NW, window=btn_reset)
+
+# testbutton 
+btn_test = Button(text="Start Test", height=1, width=10, relief=RAISED, command=call_setcube)
+btn_test_window = canvas.create_window(20,140,anchor=NW, window=btn_test)
 
 
 # set an event handler for the whole canvas
